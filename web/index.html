@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluation Factory · Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080b11; --panel:#0f1521; --panel2:#0b111b; --line:#1c2636; --line2:#273349;
+  --ink:#e8eef8; --muted:#7e8da6; --dim:#566076;
+  --lime:#b8ff3c; --cyan:#54e0ff; --red:#ff5d73; --amber:#ffc24b; --violet:#9d8bff;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --sans:'Sora',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--sans);
+  -webkit-font-smoothing:antialiased; overflow:hidden;
+  background-image:
+    radial-gradient(900px 500px at 82% -8%, rgba(84,224,255,.10), transparent 60%),
+    radial-gradient(820px 520px at 6% 108%, rgba(184,255,60,.08), transparent 60%),
+    linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+  background-size:auto,auto,34px 34px,34px 34px;
+}
+.app{display:grid;grid-template-columns:248px 1fr;height:100vh}
+
+/* ---------- Sidebar ---------- */
+.rail{border-right:1px solid var(--line);background:linear-gradient(180deg,var(--panel),var(--panel2));
+  display:flex;flex-direction:column;padding:22px 16px;gap:6px;overflow:auto}
+.brand{display:flex;align-items:center;gap:11px;margin:2px 6px 22px}
+.brand .dot{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+  background:radial-gradient(circle at 30% 25%,#1d2a18,#0c1408);border:1px solid #2c4119;
+  box-shadow:0 0 18px rgba(184,255,60,.25);font-size:18px}
+.brand h1{font-family:var(--mono);font-size:13.5px;letter-spacing:.02em;margin:0;line-height:1.2}
+.brand small{color:var(--dim);font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase}
+.navlbl{font-family:var(--mono);font-size:10px;letter-spacing:.2em;color:var(--dim);
+  text-transform:uppercase;margin:14px 8px 4px}
+.nav{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;cursor:pointer;
+  color:var(--muted);font-size:13.5px;font-weight:500;border:1px solid transparent;transition:.16s}
+.nav .ic{width:18px;text-align:center;font-size:15px;filter:grayscale(.3)}
+.nav:hover{background:rgba(255,255,255,.03);color:var(--ink)}
+.nav.on{background:linear-gradient(90deg,rgba(184,255,60,.12),rgba(184,255,60,.02));
+  color:var(--ink);border-color:rgba(184,255,60,.30)}
+.nav.on .ic{filter:none}
+.navtxt{display:flex;flex-direction:column;line-height:1.2}
+.navtxt b{font-weight:600;font-size:13.5px}
+.navtxt small{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.06em;
+  text-transform:uppercase;margin-top:2px}
+.nav.on .navtxt small{color:var(--lime)}
+.req{display:flex;gap:13px;align-items:flex-start;background:#070a10;border:1px solid var(--line2);
+  border-left:3px solid var(--lime);border-radius:0 13px 13px 0;padding:13px 16px;margin-bottom:18px}
+.req .ri{font-size:17px;line-height:1.4}
+.req .rt{font-size:13px;color:var(--muted);line-height:1.6}
+.req .rt b{color:var(--ink);font-weight:600}
+.req .pts{font-family:var(--mono);font-size:10.5px;color:var(--lime);font-weight:700;white-space:nowrap;
+  border:1px solid rgba(184,255,60,.3);border-radius:7px;padding:4px 9px;margin-left:auto}
+.railfoot{margin-top:auto;padding:12px 10px 2px;border-top:1px solid var(--line)}
+.statline{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.led{width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime);
+  animation:pulse 2s infinite}
+.led.mock{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+@keyframes pulse{50%{opacity:.35}}
+.modelchip{font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:7px;line-height:1.7}
+
+/* ---------- Main ---------- */
+.main{overflow:auto;padding:30px 38px 60px;position:relative}
+.page{display:none;animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+.page.on{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.head{margin-bottom:22px}
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--lime)}
+.head h2{margin:6px 0 5px;font-size:25px;font-weight:700;letter-spacing:-.01em}
+.head p{margin:0;color:var(--muted);font-size:14px;max-width:680px}
+
+.panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);
+  border-radius:16px;padding:22px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 18px 40px -24px #000}
+.panel + .panel{margin-top:16px}
+.row{display:grid;gap:16px}
+@media(min-width:980px){.row.split{grid-template-columns:1fr 1fr}}
+
+label.fld{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);display:block;margin:0 0 8px}
+textarea,input[type=text]{width:100%;background:#070a10;border:1px solid var(--line2);border-radius:11px;
+  color:var(--ink);font-family:var(--sans);font-size:14.5px;padding:13px 15px;resize:vertical;
+  transition:.16s;outline:none}
+textarea:focus,input:focus{border-color:rgba(184,255,60,.55);box-shadow:0 0 0 3px rgba(184,255,60,.10)}
+textarea{min-height:78px}
+
+.seg{display:inline-flex;background:#070a10;border:1px solid var(--line2);border-radius:11px;padding:4px;gap:4px}
+.seg button{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--muted);background:none;
+  border:none;padding:8px 16px;border-radius:8px;cursor:pointer;transition:.15s;letter-spacing:.03em}
+.seg button.on{color:#0a0d13}
+.seg button[data-v=V1].on{background:var(--red);box-shadow:0 0 18px rgba(255,93,115,.4)}
+.seg button[data-v=V2].on{background:var(--lime);box-shadow:0 0 18px rgba(184,255,60,.4)}
+
+.btn{font-family:var(--mono);font-weight:800;font-size:13px;letter-spacing:.04em;cursor:pointer;
+  border:none;border-radius:11px;padding:13px 22px;color:#08120a;background:var(--lime);
+  box-shadow:0 0 22px rgba(184,255,60,.30);transition:.16s;display:inline-flex;align-items:center;gap:9px}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn:disabled{opacity:.5;cursor:wait;transform:none}
+.btn.ghost{background:transparent;color:var(--cyan);border:1px solid var(--line2);box-shadow:none}
+.btn.cyan{background:var(--cyan);box-shadow:0 0 22px rgba(84,224,255,.3)}
+.toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:#070a10;border:1px solid var(--line2);
+  border-radius:999px;padding:6px 12px;cursor:pointer;transition:.15s;max-width:340px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.chip:hover{border-color:rgba(84,224,255,.5);color:var(--ink)}
+.chip.trap:hover{border-color:rgba(255,93,115,.6)}
+.chip b{color:var(--amber)}
+.chips.scroll{max-height:172px;overflow:auto;padding:10px;border:1px dashed var(--line2);
+  border-radius:12px;background:#070a10;align-content:flex-start}
+.chip .kb{color:var(--amber);font-weight:700;margin-right:6px}
+.chip.preset{border-color:var(--line2);color:var(--ink);padding:9px 14px}
+.chip.preset:hover{border-color:rgba(84,224,255,.5)}
+
+/* result blocks */
+.result{margin-top:18px;display:none}
+.result.on{display:block;animation:rise .4s both}
+.answer{font-size:15px;line-height:1.7;white-space:pre-wrap;color:#eef3fb}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tag{font-family:var(--mono);font-size:11px;color:var(--muted);background:#070a10;border:1px solid var(--line);
+  border-radius:8px;padding:5px 10px}
+.tag b{color:var(--cyan)}
+.docs{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.doc{font-family:var(--mono);font-size:11px;color:var(--lime);background:rgba(184,255,60,.07);
+  border:1px solid rgba(184,255,60,.25);border-radius:7px;padding:4px 9px}
+
+/* compare */
+.vs{display:grid;gap:16px;margin-top:18px}
+@media(min-width:900px){.vs{grid-template-columns:1fr 1fr}}
+.vcard{border:1px solid var(--line2);border-radius:14px;overflow:hidden;background:#070a10}
+.vcard .vh{padding:12px 16px;font-family:var(--mono);font-weight:800;font-size:13px;display:flex;
+  justify-content:space-between;align-items:center;letter-spacing:.04em}
+.vcard.v1 .vh{background:linear-gradient(90deg,rgba(255,93,115,.18),transparent);color:var(--red);
+  border-bottom:1px solid rgba(255,93,115,.25)}
+.vcard.v2 .vh{background:linear-gradient(90deg,rgba(184,255,60,.16),transparent);color:var(--lime);
+  border-bottom:1px solid rgba(184,255,60,.25)}
+.vbody{padding:16px}
+.vbody .answer{font-size:13.8px}
+.gauge{margin:14px 0 6px}
+.gauge .glbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;
+  color:var(--muted);margin-bottom:6px}
+.bar{height:9px;border-radius:99px;background:#10161f;overflow:hidden;border:1px solid var(--line)}
+.bar > i{display:block;height:100%;border-radius:99px;width:0;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.verdict{margin-top:12px;font-family:var(--mono);font-size:12px;font-weight:800;letter-spacing:.05em;
+  padding:8px 13px;border-radius:9px;display:inline-flex;align-items:center;gap:8px}
+.verdict.bad{background:rgba(255,93,115,.13);color:var(--red);border:1px solid rgba(255,93,115,.35)}
+.verdict.good{background:rgba(184,255,60,.12);color:var(--lime);border:1px solid rgba(184,255,60,.35)}
+
+/* judge */
+.judges{display:grid;gap:14px;margin-top:18px}
+@media(min-width:760px){.judges{grid-template-columns:1fr 1fr}}
+.jcard{background:#070a10;border:1px solid var(--line2);border-radius:14px;padding:18px}
+.jcard .jm{font-family:var(--mono);font-size:12px;color:var(--cyan);letter-spacing:.04em}
+.jscore{font-family:var(--mono);font-size:42px;font-weight:800;line-height:1;margin:10px 0 4px}
+.jscore small{font-size:16px;color:var(--muted)}
+.jreason{color:var(--muted);font-size:13px;line-height:1.6;margin-top:10px}
+.consensus{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px}
+.kpi{flex:1;min-width:150px;background:#070a10;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .kv{font-family:var(--mono);font-size:24px;font-weight:800}
+.kpi .kl{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+/* metrics dashboard */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:14px;margin-top:6px}
+.mc{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);
+  border-radius:14px;padding:18px}
+.mc .mv{font-family:var(--mono);font-size:28px;font-weight:800;letter-spacing:-.02em}
+.mc .ml{font-size:11.5px;color:var(--muted);margin-top:4px;letter-spacing:.02em}
+.mc.lime .mv{color:var(--lime)} .mc.cyan .mv{color:var(--cyan)} .mc.amber .mv{color:var(--amber)}
+.gate{margin-top:16px;border-radius:14px;padding:18px 20px;font-weight:700;
+  display:flex;align-items:center;gap:14px;border:1px solid}
+.gate.ok{background:rgba(184,255,60,.08);border-color:rgba(184,255,60,.35);color:var(--lime)}
+.gate.no{background:rgba(255,93,115,.08);border-color:rgba(255,93,115,.35);color:var(--red)}
+.gate .big{font-family:var(--mono);font-size:22px;letter-spacing:.05em}
+
+/* loader / misc */
+.loader{display:inline-flex;gap:5px;align-items:center}
+.loader i{width:7px;height:7px;border-radius:50%;background:var(--lime);animation:bounce 1s infinite}
+.loader i:nth-child(2){animation-delay:.15s}.loader i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-6px);opacity:1}}
+.err{color:var(--red);font-family:var(--mono);font-size:13px;margin-top:14px}
+.hint{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:8px}
+::-webkit-scrollbar{width:11px;height:11px}
+::-webkit-scrollbar-thumb{background:#1b2433;border-radius:99px;border:3px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#27344a}
+@media(max-width:860px){.app{grid-template-columns:1fr}.rail{flex-direction:row;flex-wrap:wrap;align-items:center;
+  height:auto;position:sticky;top:0;z-index:5}.brand{margin:0 14px 0 4px}.navlbl,.railfoot{display:none}
+  .main{padding:22px 18px 50px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="rail">
+    <div class="brand">
+      <div class="dot">🏭</div>
+      <div><h1>EVAL FACTORY</h1><small>console v1</small></div>
+    </div>
+
+    <div class="navlbl">Test</div>
+    <div class="nav on" data-tab="ask" title="Kiểm chứng pipeline RAG: lấy tài liệu → sinh câu trả lời">
+      <span class="ic">💬</span><span class="navtxt"><b>Hỏi Agent</b><small>RAG · 10đ</small></span></div>
+    <div class="nav" data-tab="halluc" title="Chứng minh agent có bịa thông tin ngoài tài liệu không">
+      <span class="ic">🎣</span><span class="navtxt"><b>Soi Hallucination</b><small>Red-Team · 10đ</small></span></div>
+    <div class="nav" data-tab="judge" title="Chấm điểm khách quan bằng 2 model + đo độ tin cậy">
+      <span class="ic">⚖️</span><span class="navtxt"><b>Multi-Judge</b><small>Reliability · 15đ</small></span></div>
+    <div class="navlbl">Tổng quan</div>
+    <div class="nav" data-tab="metrics" title="Tổng hợp benchmark, so V1 vs V2, Release Gate">
+      <span class="ic">📊</span><span class="navtxt"><b>Bảng số liệu</b><small>Regression · 20đ</small></span></div>
+
+    <div class="railfoot">
+      <div class="statline"><span class="led" id="led"></span><span id="modeTxt">đang kết nối…</span></div>
+      <div class="modelchip" id="models"></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ASK -->
+    <section class="page on" id="page-ask">
+      <div class="head">
+        <div class="kicker">Module 01 · RAG Agent</div>
+        <h2>Hỏi Agent</h2>
+        <p>Đặt câu hỏi cho Agent. Chọn phiên bản V1 (baseline ẩu) hay V2 (có guardrail) và xem nó
+           lấy tài liệu nào (RAG) để trả lời.</p>
+      </div>
+      <div class="req"><span class="ri">🎯</span>
+        <div class="rt"><b>Mục đích:</b> chứng minh Agent trả lời dựa trên tài liệu RAG (retrieval → generation), không bịa.
+          <b>Cách test:</b> chọn V1/V2 → bấm 1 câu hỏi có sẵn → xem nó lấy tài liệu <b>KB-xxx</b> nào.</div>
+        <span class="pts">Retrieval · 10đ</span></div>
+      <div class="panel">
+        <label class="fld">Phiên bản Agent</label>
+        <div class="seg" id="askVer">
+          <button data-v="V1">V1 · baseline</button>
+          <button data-v="V2" class="on">V2 · optimized</button>
+        </div>
+        <div style="height:16px"></div>
+        <label class="fld">Câu hỏi</label>
+        <textarea id="askQ" placeholder="bấm một câu hỏi có sẵn bên dưới, hoặc tự gõ"></textarea>
+        <label class="fld" style="margin-top:14px">📂 Câu hỏi có sẵn — bấm để chọn (tất cả trả lời từ RAG)</label>
+        <div class="chips scroll" id="askChips"></div>
+        <div class="toolbar">
+          <button class="btn" id="askBtn" title="Lấy tài liệu RAG rồi để LLM sinh câu trả lời">▶ Chạy Agent</button>
+          <span class="hint">retrieval + generation · hiện tài liệu KB đã dùng</span>
+        </div>
+        <div class="result" id="askRes">
+          <label class="fld">Câu trả lời</label>
+          <div class="answer" id="askAns"></div>
+          <div class="docs" id="askDocs"></div>
+          <div class="meta" id="askMeta"></div>
+        </div>
+        <div id="askErr"></div>
+      </div>
+    </section>
+
+    <!-- HALLUCINATION -->
+    <section class="page" id="page-halluc">
+      <div class="head">
+        <div class="kicker">Module 02 · Red Team</div>
+        <h2>Soi Hallucination — V1 vs V2</h2>
+        <p>Cùng một câu hỏi chạy qua CẢ hai agent + chấm <b>Faithfulness</b> (độ bám tài liệu).
+           Dùng câu hỏi "bẫy" bên dưới để thấy V1 bịa con số, còn V2 từ chối đúng.</p>
+      </div>
+      <div class="req"><span class="ri">🎯</span>
+        <div class="rt"><b>Mục đích:</b> đo agent có <b>bịa</b> thông tin ngoài tài liệu không (chỉ số Faithfulness).
+          <b>Cách test:</b> bấm câu "bẫy" 🎣 → so V1 vs V2 → thanh <b>Faithfulness &lt; 0.6 = BỊA</b> 🟥, ngược lại 🟩.</div>
+        <span class="pts">Red-Team · 10đ</span></div>
+      <div class="panel">
+        <label class="fld">Câu hỏi bẫy (chi tiết KHÔNG có trong tài liệu)</label>
+        <textarea id="cmpQ" placeholder="vd: VPN cho đăng nhập tối đa bao nhiêu thiết bị?"></textarea>
+        <div class="chips" id="cmpChips"></div>
+        <div class="toolbar">
+          <button class="btn cyan" id="cmpBtn" title="Chạy cả V1 và V2 trên cùng câu hỏi + chấm faithfulness">⚔ So sánh V1 vs V2</button>
+          <span class="hint">faithfulness &lt; 0.6 = BỊA</span>
+        </div>
+        <div class="result" id="cmpRes">
+          <div class="vs">
+            <div class="vcard v1">
+              <div class="vh"><span>V1 · BASELINE</span><span id="cmpV1tag"></span></div>
+              <div class="vbody"><div class="answer" id="cmpV1ans"></div>
+                <div class="gauge"><div class="glbl"><span>Faithfulness</span><span id="cmpV1fv"></span></div>
+                  <div class="bar"><i id="cmpV1bar"></i></div></div>
+                <div id="cmpV1ver"></div></div>
+            </div>
+            <div class="vcard v2">
+              <div class="vh"><span>V2 · GUARDRAIL</span><span id="cmpV2tag"></span></div>
+              <div class="vbody"><div class="answer" id="cmpV2ans"></div>
+                <div class="gauge"><div class="glbl"><span>Faithfulness</span><span id="cmpV2fv"></span></div>
+                  <div class="bar"><i id="cmpV2bar"></i></div></div>
+                <div id="cmpV2ver"></div></div>
+            </div>
+          </div>
+          <div class="meta" id="cmpMeta"></div>
+        </div>
+        <div id="cmpErr"></div>
+      </div>
+    </section>
+
+    <!-- JUDGE -->
+    <section class="page" id="page-judge">
+      <div class="head">
+        <div class="kicker">Module 03 · Reliability</div>
+        <h2>Multi-Judge Consensus</h2>
+        <p>Hai model chấm độc lập (<span id="jmA">gpt-4o</span> + <span id="jmB">gpt-4o-mini</span>),
+           tính độ đồng thuận và tự xử lý xung đột. Thử nhập một câu trả lời SAI để xem điểm tụt.</p>
+      </div>
+      <div class="req"><span class="ri">🎯</span>
+        <div class="rt"><b>Yêu cầu (mục điểm liệt):</b> ≥2 model judge khác nhau + đo độ đồng thuận + tự xử lý xung đột.
+          <b>Cách test:</b> bấm preset (đúng/sai/một phần) → xem 2 model có chấm nhất quán &amp; phân biệt tốt/xấu không.</div>
+        <span class="pts">Multi-Judge · 15đ</span></div>
+      <div class="panel">
+        <div class="row split">
+          <div><label class="fld">Câu hỏi</label>
+            <textarea id="jQ" placeholder="vd: Đổi mật khẩu thế nào?"></textarea></div>
+          <div><label class="fld">Đáp án chuẩn (tham chiếu)</label>
+            <textarea id="jGT" placeholder="vd: Vào portal.company.local, tối thiểu 12 ký tự…"></textarea></div>
+        </div>
+        <div style="height:14px"></div>
+        <label class="fld">Câu trả lời cần chấm</label>
+        <textarea id="jA" placeholder="bấm preset bên dưới để điền sẵn, hoặc tự gõ"></textarea>
+        <label class="fld" style="margin-top:14px">🎯 Preset — bấm để điền sẵn cả 3 ô</label>
+        <div class="chips" id="jPresets"></div>
+        <div class="toolbar">
+          <button class="btn" id="jBtn" title="2 model gpt-4o + gpt-4o-mini chấm độc lập rồi hợp nhất">⚖ Chấm điểm</button>
+          <span class="hint">2 giám khảo chấm độc lập → đồng thuận → xử lý xung đột</span>
+        </div>
+        <div class="result" id="jRes">
+          <div class="judges" id="jCards"></div>
+          <div class="consensus" id="jCons"></div>
+        </div>
+        <div id="jErr"></div>
+      </div>
+    </section>
+
+    <!-- METRICS -->
+    <section class="page" id="page-metrics">
+      <div class="head">
+        <div class="kicker">Module 04 · Benchmark</div>
+        <h2>Bảng số liệu (từ lần chạy gần nhất)</h2>
+        <p>Đọc <code>reports/summary.json</code>. Chạy <code>python main.py</code> để cập nhật.</p>
+      </div>
+      <div class="req"><span class="ri">🎯</span>
+        <div class="rt"><b>Mục đích:</b> tổng hợp benchmark, so V1 vs V2 và <b>Release Gate</b> tự động (APPROVE/BLOCK).
+          <b>Cách đọc:</b> các thẻ chỉ số (Hit Rate, Kappa, cost…) + quyết định release ở dưới.</div>
+        <span class="pts">Regression + Performance · 20đ</span></div>
+      <div class="panel">
+        <div class="toolbar" style="margin-top:0">
+          <button class="btn ghost" id="mRefresh">⟳ Tải lại số liệu</button>
+        </div>
+        <div id="mWrap" style="margin-top:16px"></div>
+        <div id="mErr"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const loader = '<span class="loader"><i></i><i></i><i></i></span>';
+async function api(path, opts){
+  const r = await fetch(path, opts);
+  const j = await r.json().catch(()=>({error:'phản hồi không hợp lệ'}));
+  if(!r.ok) throw new Error(j.error || ('HTTP '+r.status));
+  return j;
+}
+
+/* ---- tabs ---- */
+document.querySelectorAll('.nav').forEach(n=>n.onclick=()=>{
+  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('on'));
+  n.classList.add('on');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  $('#page-'+n.dataset.tab).classList.add('on');
+  if(n.dataset.tab==='metrics' && !window._mLoaded) loadMetrics();
+});
+
+/* ---- status ---- */
+api('/api/status').then(s=>{
+  const mock = s.mode==='MOCK';
+  $('#led').className = 'led'+(mock?' mock':'');
+  $('#modeTxt').textContent = s.mode==='LIVE' ? 'LIVE · OpenAI' : 'MOCK · giả lập';
+  $('#models').innerHTML = `agent: ${s.agent_model}<br>judge: ${s.judge_a} + ${s.judge_b}`;
+  $('#jmA').textContent = s.judge_a; $('#jmB').textContent = s.judge_b;
+}).catch(()=>{$('#modeTxt').textContent='backend offline';});
+
+/* ---- samples (câu hỏi bấm-chọn, khỏi gõ) ---- */
+api('/api/samples').then(s=>{
+  // câu hỏi RAG có sẵn (kèm nhãn KB)
+  (s.ask||[]).forEach(it=>{
+    const c=el('div','chip', `<span class="kb">${it.kb}</span>${it.q}`); c.title=it.q;
+    c.onclick=()=>{$('#askQ').value=it.q; $('#askQ').focus();};
+    $('#askChips').appendChild(c);
+  });
+  // bẫy hallucination
+  (s.traps||[]).forEach(it=>{
+    const c=el('div','chip trap','🎣 '+it.q); c.title=it.q;
+    c.onclick=()=>{$('#cmpQ').value=it.q;};
+    $('#cmpChips').appendChild(c);
+  });
+  // preset cho Multi-Judge
+  (s.judge_presets||[]).forEach(p=>{
+    const c=el('div','chip preset',p.label);
+    c.onclick=()=>{$('#jQ').value=p.q; $('#jGT').value=p.gt; $('#jA').value=p.a;};
+    $('#jPresets').appendChild(c);
+  });
+}).catch(()=>{});
+
+/* ---- ASK ---- */
+let askVer='V2';
+$('#askVer').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  askVer=b.dataset.v;[...$('#askVer').children].forEach(x=>x.classList.toggle('on',x===b));};
+$('#askBtn').onclick=async()=>{
+  const q=$('#askQ').value.trim(); if(!q)return;
+  const btn=$('#askBtn'); btn.disabled=true; btn.innerHTML=loader; $('#askErr').textContent='';
+  try{
+    const d=await api('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:q,version:askVer})});
+    $('#askAns').textContent=d.answer;
+    $('#askDocs').innerHTML=d.retrieved_ids.map(id=>`<span class="doc">📄 ${id}</span>`).join('');
+    $('#askMeta').innerHTML=`<span class="tag">agent <b>${d.version}</b></span>
+      <span class="tag">độ trễ <b>${d.latency}s</b></span>
+      <span class="tag">chi phí <b>$${d.cost}</b></span>
+      <span class="tag">tài liệu RAG <b>${d.retrieved_ids.length}</b></span>`;
+    $('#askRes').classList.add('on');
+  }catch(e){$('#askErr').innerHTML=`<div class="err">⚠ ${e.message}</div>`;}
+  btn.disabled=false; btn.innerHTML='▶ Chạy Agent';
+};
+
+/* ---- COMPARE ---- */
+function fillV(side,v){
+  const f=v.faithfulness, pct=Math.round(f*100), bad=f<0.6;
+  $('#cmp'+side+'ans').textContent=v.answer;
+  $('#cmp'+side+'fv').textContent=f.toFixed(2);
+  const bar=$('#cmp'+side+'bar'); bar.style.width=pct+'%';
+  bar.style.background=bad?'var(--red)':'var(--lime)';
+  bar.style.boxShadow=`0 0 14px ${bad?'rgba(255,93,115,.6)':'rgba(184,255,60,.5)'}`;
+  $('#cmp'+side+'ver').innerHTML=bad
+    ?'<span class="verdict bad">🟥 BỊA — khẳng định ngoài tài liệu</span>'
+    :'<span class="verdict good">🟩 BÁM CONTEXT — không bịa</span>';
+  $('#cmp'+side+'tag').textContent=bad?'⚠ hallucination':'✓ grounded';
+}
+$('#cmpBtn').onclick=async()=>{
+  const q=$('#cmpQ').value.trim(); if(!q)return;
+  const btn=$('#cmpBtn'); btn.disabled=true; btn.innerHTML=loader; $('#cmpErr').textContent='';
+  try{
+    const d=await api('/api/compare',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:q})});
+    fillV('V1',d.V1); fillV('V2',d.V2);
+    const better=(d.V2.faithfulness-d.V1.faithfulness).toFixed(2);
+    $('#cmpMeta').innerHTML=`<span class="tag">chi phí <b>$${d.cost}</b></span>
+      <span class="tag">V2 bám context hơn V1 <b>${better>=0?'+':''}${better}</b></span>`;
+    $('#cmpRes').classList.add('on');
+  }catch(e){$('#cmpErr').innerHTML=`<div class="err">⚠ ${e.message}</div>`;}
+  btn.disabled=false; btn.innerHTML='⚔ So sánh V1 vs V2';
+};
+
+/* ---- JUDGE ---- */
+$('#jBtn').onclick=async()=>{
+  const q=$('#jQ').value.trim(), a=$('#jA').value.trim(), gt=$('#jGT').value.trim();
+  if(!q||!a){$('#jErr').innerHTML='<div class="err">⚠ Cần câu hỏi và câu trả lời</div>';return;}
+  const btn=$('#jBtn'); btn.disabled=true; btn.innerHTML=loader; $('#jErr').textContent='';
+  try{
+    const d=await api('/api/judge',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({question:q,answer:a,ground_truth:gt})});
+    const sc=d.individual_scores, names=Object.keys(sc);
+    $('#jCards').innerHTML=names.map(m=>{
+      const s=sc[m], r=(d.reasoning&&d.reasoning[m])||'';
+      const col=s>=4?'var(--lime)':s>=3?'var(--amber)':'var(--red)';
+      return `<div class="jcard"><div class="jm">⚖ ${m}</div>
+        <div class="jscore" style="color:${col}">${s}<small>/5</small></div>
+        <div class="jreason">${r}</div></div>`;}).join('');
+    const agPct=Math.round(d.agreement*100);
+    $('#jCons').innerHTML=`
+      <div class="kpi"><div class="kv">${d.final_score}</div><div class="kl">Điểm chốt (consensus)</div></div>
+      <div class="kpi"><div class="kv" style="color:var(--cyan)">${agPct}%</div><div class="kl">Độ đồng thuận</div></div>
+      <div class="kpi"><div class="kv" style="color:${d.conflict?'var(--red)':'var(--lime)'}">${d.conflict?'CÓ':'KHÔNG'}</div>
+        <div class="kl">Xung đột · ${d.resolution}</div></div>
+      <div class="kpi"><div class="kv">$${d.cost}</div><div class="kl">Chi phí lần chấm</div></div>`;
+    $('#jRes').classList.add('on');
+  }catch(e){$('#jErr').innerHTML=`<div class="err">⚠ ${e.message}</div>`;}
+  btn.disabled=false; btn.innerHTML='⚖ Chấm điểm';
+};
+
+/* ---- METRICS ---- */
+async function loadMetrics(){
+  const wrap=$('#mWrap'); wrap.innerHTML=loader; $('#mErr').textContent='';
+  try{
+    const d=await api('/api/summary'); window._mLoaded=true;
+    const m=d.metrics, reg=d.regression||{}, cost=d.cost||{};
+    const pct=x=>(x*100).toFixed(1)+'%';
+    const card=(v,l,c)=>`<div class="mc ${c||''}"><div class="mv">${v}</div><div class="ml">${l}</div></div>`;
+    let html=`<div class="cards">
+      ${card(d.metadata.total,'Test cases','cyan')}
+      ${card(m.avg_score.toFixed(2)+' /5','Điểm Multi-Judge','lime')}
+      ${card(pct(m.pass_rate),'Pass rate','lime')}
+      ${card(pct(m.hit_rate),'Hit Rate (RAG)','lime')}
+      ${card(m.mrr.toFixed(3),'MRR')}
+      ${card(m.faithfulness.toFixed(2),'Faithfulness','lime')}
+      ${card(pct(m.agreement_rate),'Agreement 2 judge','cyan')}
+      ${card(m.cohen_kappa.toFixed(2),"Cohen's Kappa",'cyan')}
+      ${card(m.conflicts,'Xung đột judge')}
+      ${card(m.avg_latency_s+'s','Độ trễ TB')}
+      ${card('$'+cost.cost_per_eval_usd,'Chi phí / eval','amber')}
+      ${card('$'+cost.total_cost_usd,'Tổng chi phí','amber')}
+    </div>`;
+    if(reg.decision){
+      const ok=reg.decision==='APPROVE';
+      html+=`<div class="gate ${ok?'ok':'no'}"><span class="big">${ok?'✓ APPROVE':'✕ BLOCK'}</span>
+        <span style="font-weight:500;color:var(--ink)">Δscore = ${reg.delta.avg_score>=0?'+':''}${reg.delta.avg_score}
+        · V1 ${reg.v1_metrics.avg_score} → V2 ${reg.v2_metrics.avg_score} · mode ${d.metadata.mode}</span></div>`;
+    }
+    wrap.innerHTML=html;
+  }catch(e){wrap.innerHTML=''; $('#mErr').innerHTML=`<div class="err">⚠ ${e.message}</div>`;}
+}
+$('#mRefresh').onclick=()=>{window._mLoaded=false;loadMetrics();};
+</script>
+</body>
+</html>

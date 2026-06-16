@@ -2,5 +2,9 @@
 __pycache__/
 *.pyc
 .DS_Store
-reports/
+
+# Golden dataset được sinh lại bằng `python data/synthetic_gen.py` (không commit).
 data/golden_set.jsonl
+
+# Lưu ý: thư mục reports/ KHÔNG bị ignore vì là sản phẩm nộp bài bắt buộc
+# (reports/summary.json, reports/benchmark_results.json).

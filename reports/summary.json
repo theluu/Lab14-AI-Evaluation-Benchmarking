@@ -1,0 +1,182 @@
+{
+  "metadata": {
+    "version": "Agent_V2_Optimized",
+    "total": 55,
+    "mode": "LIVE",
+    "timestamp": "2026-06-16 15:15:58"
+  },
+  "metrics": {
+    "avg_score": 4.836,
+    "pass_rate": 1.0,
+    "hit_rate": 1.0,
+    "mrr": 0.9804,
+    "retrieval_evaluated_cases": 51,
+    "faithfulness": 1.0,
+    "relevancy": 0.864,
+    "agreement_rate": 0.927,
+    "cohen_kappa": 0.4271,
+    "conflicts": 0,
+    "avg_latency_s": 3.076,
+    "max_latency_s": 10.738,
+    "wall_clock_s": 98.52
+  },
+  "cost": {
+    "total_llm_calls": 275,
+    "prompt_tokens": 110889,
+    "completion_tokens": 18750,
+    "total_tokens": 129639,
+    "total_cost_usd": 0.107879,
+    "cost_per_eval_usd": 0.001961,
+    "by_model": {
+      "text-embedding-3-small": {
+        "calls": 55,
+        "prompt_tokens": 1520,
+        "completion_tokens": 0,
+        "cost_usd": 3e-05
+      },
+      "gpt-4o-mini": {
+        "calls": 165,
+        "prompt_tokens": 90932,
+        "completion_tokens": 14828,
+        "cost_usd": 0.022537
+      },
+      "gpt-4o": {
+        "calls": 55,
+        "prompt_tokens": 18437,
+        "completion_tokens": 3922,
+        "cost_usd": 0.085312
+      }
+    }
+  },
+  "embedding_cost": {
+    "total_llm_calls": 1,
+    "prompt_tokens": 1845,
+    "completion_tokens": 0,
+    "total_tokens": 1845,
+    "total_cost_usd": 3.7e-05,
+    "cost_per_eval_usd": 1e-06,
+    "by_model": {
+      "text-embedding-3-small": {
+        "calls": 1,
+        "prompt_tokens": 1845,
+        "completion_tokens": 0,
+        "cost_usd": 3.7e-05
+      }
+    }
+  },
+  "position_bias": {
+    "samples": 5,
+    "consistent": 5,
+    "consistency_rate": 1.0,
+    "note": "Tỉ lệ judge giữ nguyên phán đoán khi đảo vị trí A/B. Càng cao càng ít thiên vị vị trí."
+  },
+  "regression": {
+    "v1_metrics": {
+      "avg_score": 4.718,
+      "pass_rate": 0.964,
+      "hit_rate": 1.0,
+      "mrr": 0.9804,
+      "retrieval_evaluated_cases": 51,
+      "faithfulness": 0.982,
+      "relevancy": 0.891,
+      "agreement_rate": 0.882,
+      "cohen_kappa": 0.2778,
+      "conflicts": 0,
+      "avg_latency_s": 4.438,
+      "max_latency_s": 15.571,
+      "wall_clock_s": 120.92
+    },
+    "v2_metrics": {
+      "avg_score": 4.836,
+      "pass_rate": 1.0,
+      "hit_rate": 1.0,
+      "mrr": 0.9804,
+      "retrieval_evaluated_cases": 51,
+      "faithfulness": 1.0,
+      "relevancy": 0.864,
+      "agreement_rate": 0.927,
+      "cohen_kappa": 0.4271,
+      "conflicts": 0,
+      "avg_latency_s": 3.076,
+      "max_latency_s": 10.738,
+      "wall_clock_s": 98.52
+    },
+    "v1_cost": {
+      "total_llm_calls": 275,
+      "prompt_tokens": 94049,
+      "completion_tokens": 23646,
+      "total_tokens": 117695,
+      "total_cost_usd": 0.122309,
+      "cost_per_eval_usd": 0.002224,
+      "by_model": {
+        "text-embedding-3-small": {
+          "calls": 55,
+          "prompt_tokens": 1520,
+          "completion_tokens": 0,
+          "cost_usd": 3e-05
+        },
+        "gpt-4o-mini": {
+          "calls": 165,
+          "prompt_tokens": 70067,
+          "completion_tokens": 19239,
+          "cost_usd": 0.022053
+        },
+        "gpt-4o": {
+          "calls": 55,
+          "prompt_tokens": 22462,
+          "completion_tokens": 4407,
+          "cost_usd": 0.100225
+        }
+      }
+    },
+    "v2_cost": {
+      "total_llm_calls": 275,
+      "prompt_tokens": 110889,
+      "completion_tokens": 18750,
+      "total_tokens": 129639,
+      "total_cost_usd": 0.107879,
+      "cost_per_eval_usd": 0.001961,
+      "by_model": {
+        "text-embedding-3-small": {
+          "calls": 55,
+          "prompt_tokens": 1520,
+          "completion_tokens": 0,
+          "cost_usd": 3e-05
+        },
+        "gpt-4o-mini": {
+          "calls": 165,
+          "prompt_tokens": 90932,
+          "completion_tokens": 14828,
+          "cost_usd": 0.022537
+        },
+        "gpt-4o": {
+          "calls": 55,
+          "prompt_tokens": 18437,
+          "completion_tokens": 3922,
+          "cost_usd": 0.085312
+        }
+      }
+    },
+    "delta": {
+      "avg_score": 0.118,
+      "hit_rate": 0.0,
+      "faithfulness": 0.018,
+      "pass_rate": 0.036
+    },
+    "cost_ratio_v2_over_v1": 0.882,
+    "decision": "APPROVE",
+    "reasons": [
+      "Chất lượng tăng/giữ (Δscore=+0.118).",
+      "Faithfulness 1.00 đạt ngưỡng.",
+      "Chi phí/eval trong ngưỡng (x0.88)."
+    ]
+  },
+  "cost_optimization_proposal": {
+    "idea": "Giảm ~30% chi phí eval mà không giảm độ chính xác.",
+    "tactics": [
+      "Dùng gpt-4o-mini làm judge mặc định, chỉ escalate gpt-4o khi 2 judge xung đột (cascade).",
+      "Cache embedding corpus (đã làm) và cache kết quả judge cho câu trả lời trùng lặp.",
+      "Gộp faithfulness + relevancy vào 1 lời gọi LLM thay vì 2."
+    ]
+  }
+}

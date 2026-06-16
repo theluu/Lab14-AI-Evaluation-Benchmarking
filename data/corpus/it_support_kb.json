@@ -1,0 +1,72 @@
+[
+  {
+    "id": "KB-001",
+    "title": "Đổi mật khẩu tài khoản công ty",
+    "text": "Để đổi mật khẩu, truy cập cổng tự phục vụ tại portal.company.local và chọn 'Đổi mật khẩu'. Mật khẩu mới phải dài tối thiểu 12 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt. Mật khẩu hết hạn sau 90 ngày. Không được dùng lại 5 mật khẩu gần nhất. Sau khi đổi, bạn phải đăng nhập lại trên tất cả thiết bị."
+  },
+  {
+    "id": "KB-002",
+    "title": "Khôi phục tài khoản bị khóa",
+    "text": "Tài khoản sẽ tự động bị khóa sau 5 lần nhập sai mật khẩu liên tiếp. Thời gian khóa mặc định là 30 phút, sau đó tự mở. Nếu cần mở khóa ngay, hãy gọi IT Helpdesk số nội bộ 1234 và xác minh danh tính bằng mã nhân viên. Quản trị viên không bao giờ hỏi mật khẩu của bạn qua điện thoại."
+  },
+  {
+    "id": "KB-003",
+    "title": "Cấu hình và kết nối VPN",
+    "text": "Công ty dùng VPN client GlobalConnect. Tải tại portal.company.local/vpn. Đăng nhập bằng tài khoản công ty kèm mã OTP từ ứng dụng Authenticator. VPN bắt buộc khi truy cập hệ thống nội bộ từ xa. Nếu báo lỗi 'Authentication failed', kiểm tra đồng hồ điện thoại đã đồng bộ tự động chưa vì OTP phụ thuộc thời gian."
+  },
+  {
+    "id": "KB-004",
+    "title": "Thiết lập email trên điện thoại",
+    "text": "Email công ty dùng Microsoft Exchange. Trên điện thoại, thêm tài khoản loại 'Exchange', nhập địa chỉ email và mật khẩu công ty, server là mail.company.local. Phải bật mã hóa SSL. Thiết bị di động bắt buộc cài MDM (quản lý thiết bị) trước khi đồng bộ email lần đầu, nếu không sẽ bị từ chối kết nối."
+  },
+  {
+    "id": "KB-005",
+    "title": "Bật xác thực hai lớp (MFA)",
+    "text": "MFA là bắt buộc cho mọi nhân viên. Cài ứng dụng Microsoft Authenticator, vào aka.ms/mfasetup, quét mã QR. Nên đăng ký ít nhất 2 phương thức (app và số điện thoại dự phòng). Nếu mất điện thoại, liên hệ Helpdesk để reset MFA sau khi xác minh danh tính qua quản lý trực tiếp."
+  },
+  {
+    "id": "KB-006",
+    "title": "Kết nối Wi-Fi văn phòng",
+    "text": "Mạng Wi-Fi nhân viên tên 'CompanyCorp', xác thực bằng tài khoản công ty (WPA2-Enterprise). Mạng 'CompanyGuest' dành cho khách, đổi mật khẩu hàng tuần và lấy tại quầy lễ tân. Không kết nối thiết bị cá nhân vào CompanyCorp nếu chưa đăng ký MDM."
+  },
+  {
+    "id": "KB-007",
+    "title": "Cài đặt phần mềm và quyền admin",
+    "text": "Nhân viên không có quyền admin trên máy. Để cài phần mềm, tạo ticket trên ServiceDesk chọn mục 'Software Request', nêu rõ tên phần mềm và lý do công việc. Phần mềm phải nằm trong danh mục được duyệt. Yêu cầu thường được xử lý trong 1 ngày làm việc. Phần mềm không có bản quyền sẽ bị từ chối."
+  },
+  {
+    "id": "KB-008",
+    "title": "Khắc phục sự cố máy in",
+    "text": "Máy in dùng hàng đợi in tập trung 'PrintCloud'. Nếu lệnh in treo, vào portal.company.local/print để xóa hàng đợi. Để in, bạn phải quẹt thẻ nhân viên tại máy in (Follow-Me Printing). Nếu máy báo hết mực, chụp mã lỗi và tạo ticket; bộ phận Facility sẽ thay mực, không tự ý mở máy."
+  },
+  {
+    "id": "KB-009",
+    "title": "Sao lưu và khôi phục dữ liệu",
+    "text": "Dữ liệu chỉ được sao lưu tự động nếu lưu trong thư mục OneDrive hoặc ổ đĩa mạng H:. Dữ liệu lưu ở Desktop hoặc ổ C: KHÔNG được sao lưu và sẽ mất nếu máy hỏng. Có thể khôi phục file đã xóa trong vòng 30 ngày qua tính năng Version History của OneDrive."
+  },
+  {
+    "id": "KB-010",
+    "title": "Truy cập máy tính từ xa (Remote Desktop)",
+    "text": "Để làm việc từ xa, kết nối VPN trước, sau đó dùng Remote Desktop tới tên máy của bạn dạng PC-<mã nhân viên>.company.local. Máy ở văn phòng phải được bật và không ở chế độ ngủ. Nếu không kết nối được, kiểm tra VPN đang chạy và máy đích đang bật nguồn."
+  },
+  {
+    "id": "KB-011",
+    "title": "Nhận biết và báo cáo email lừa đảo (Phishing)",
+    "text": "Dấu hiệu phishing: người gửi lạ, đường link không khớp tên miền company.local, yêu cầu gấp về mật khẩu hoặc chuyển tiền. KHÔNG bấm link, KHÔNG nhập thông tin. Dùng nút 'Report Phishing' trong Outlook để báo cáo. IT không bao giờ yêu cầu mật khẩu qua email."
+  },
+  {
+    "id": "KB-012",
+    "title": "Quy trình cấp thiết bị cho nhân viên mới",
+    "text": "Nhân viên mới được cấp laptop chuẩn cấu hình theo phòng ban trong ngày đầu tiên. Quản lý trực tiếp tạo ticket 'Onboarding' trước ngày nhận việc ít nhất 3 ngày. Tài khoản, email và quyền truy cập hệ thống được kích hoạt vào sáng ngày đầu sau khi ký cam kết bảo mật."
+  },
+  {
+    "id": "KB-013",
+    "title": "Cam kết mức dịch vụ (SLA) của Helpdesk",
+    "text": "Ticket được phân loại theo mức ưu tiên: P1 (hệ thống ngừng hoạt động) phản hồi trong 15 phút; P2 (ảnh hưởng nhiều người) trong 1 giờ; P3 (sự cố cá nhân) trong 4 giờ; P4 (yêu cầu thông thường) trong 1 ngày làm việc. Giờ hỗ trợ là 8:00-18:00 các ngày làm việc."
+  },
+  {
+    "id": "KB-014",
+    "title": "Chính sách sử dụng USB và thiết bị lưu trữ ngoài",
+    "text": "Cổng USB lưu trữ bị khóa mặc định để chống rò rỉ dữ liệu. Nếu cần dùng USB cho công việc, tạo ticket xin cấp quyền kèm phê duyệt của trưởng phòng. Chỉ USB được mã hóa do công ty cấp mới được phép. Dữ liệu nhạy cảm tuyệt đối không sao chép ra thiết bị cá nhân."
+  }
+]

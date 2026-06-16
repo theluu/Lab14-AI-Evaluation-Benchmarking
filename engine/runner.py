@@ -1,48 +1,65 @@
+"""
+BenchmarkRunner — điều phối chạy đánh giá cho toàn bộ dataset.
+
+Mỗi case đi qua: Agent -> Retrieval eval -> Faithfulness -> Multi-Judge.
+Chạy SONG SONG bằng asyncio + Semaphore (giới hạn concurrency để không bị Rate Limit).
+Đo latency, token và cost cho từng lần eval.
+"""
 import asyncio
 import time
 from typing import List, Dict
-# Import other components...
+
+from engine import config
+from engine.cost import CostTracker
+from engine.faithfulness import FaithfulnessEvaluator
+from engine.llm_judge import MultiJudge
+from engine.retrieval_eval import RetrievalEvaluator
+
 
 class BenchmarkRunner:
-    def __init__(self, agent, evaluator, judge):
+    def __init__(self, agent, judge: MultiJudge = None, tracker: CostTracker = None):
         self.agent = agent
-        self.evaluator = evaluator
-        self.judge = judge
+        self.retrieval_eval = RetrievalEvaluator()
+        self.faithfulness = FaithfulnessEvaluator()
+        self.judge = judge or MultiJudge()
+        self.tracker = tracker or CostTracker()
+        self._sem = asyncio.Semaphore(config.MAX_CONCURRENCY)
 
-    async def run_single_test(self, test_case: Dict) -> Dict:
-        start_time = time.perf_counter()
-        
-        # 1. Gọi Agent
-        response = await self.agent.query(test_case["question"])
-        latency = time.perf_counter() - start_time
-        
-        # 2. Chạy RAGAS metrics
-        ragas_scores = await self.evaluator.score(test_case, response)
-        
-        # 3. Chạy Multi-Judge
-        judge_result = await self.judge.evaluate_multi_judge(
-            test_case["question"], 
-            response["answer"], 
-            test_case["expected_answer"]
-        )
-        
+    async def run_single_test(self, case: Dict) -> Dict:
+        async with self._sem:
+            start = time.perf_counter()
+            resp = await self.agent.query(case["question"], tracker=self.tracker)
+            latency = time.perf_counter() - start
+
+            retrieval = self.retrieval_eval.score_case(
+                case.get("expected_retrieval_ids", []),
+                resp["retrieved_ids"],
+                top_k=self.agent.cfg["top_k"],
+            )
+            faith = await self.faithfulness.score(
+                case["question"], resp["answer"], resp["contexts"], tracker=self.tracker
+            )
+            judge = await self.judge.evaluate_multi_judge(
+                case["question"], resp["answer"], case["expected_answer"], tracker=self.tracker
+            )
+
         return {
-            "test_case": test_case["question"],
-            "agent_response": response["answer"],
-            "latency": latency,
-            "ragas": ragas_scores,
-            "judge": judge_result,
-            "status": "fail" if judge_result["final_score"] < 3 else "pass"
+            "id": case.get("id"),
+            "type": case["metadata"].get("type"),
+            "difficulty": case["metadata"].get("difficulty"),
+            "question": case["question"],
+            "expected_answer": case["expected_answer"],
+            "agent_answer": resp["answer"],
+            "expected_retrieval_ids": case.get("expected_retrieval_ids", []),
+            "retrieved_ids": resp["retrieved_ids"],
+            "latency_s": round(latency, 3),
+            "retrieval": retrieval,
+            "faithfulness": faith["faithfulness"],
+            "relevancy": faith["relevancy"],
+            "judge": judge,
+            "status": "pass" if judge["final_score"] >= 3 else "fail",
         }
 
-    async def run_all(self, dataset: List[Dict], batch_size: int = 5) -> List[Dict]:
-        """
-        Chạy song song bằng asyncio.gather với giới hạn batch_size để không bị Rate Limit.
-        """
-        results = []
-        for i in range(0, len(dataset), batch_size):
-            batch = dataset[i:i + batch_size]
-            tasks = [self.run_single_test(case) for case in batch]
-            batch_results = await asyncio.gather(*tasks)
-            results.extend(batch_results)
-        return results
+    async def run_all(self, dataset: List[Dict]) -> List[Dict]:
+        tasks = [self.run_single_test(case) for case in dataset]
+        return await asyncio.gather(*tasks)

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab 14 — AI Evaluation Factory · Báo cáo dự án</title>
+<style>
+  :root{
+    --bg:#f5f6fa; --card:#ffffff; --ink:#1e2230; --muted:#64708a;
+    --line:#e6e9f2; --indigo:#4f46e5; --indigo-soft:#eef0ff;
+    --green:#0f9d58; --green-soft:#e7f6ee; --red:#d9352c; --red-soft:#fdecea;
+    --amber:#b7791f; --amber-soft:#fdf3e2; --shadow:0 1px 3px rgba(20,24,40,.06),0 8px 24px rgba(20,24,40,.05);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:980px;margin:0 auto;padding:32px 22px 80px}
+  header.hero{background:linear-gradient(135deg,#4f46e5,#7c3aed 55%,#9333ea);color:#fff;
+    border-radius:20px;padding:38px 36px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  header.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;
+    background:rgba(255,255,255,.10);border-radius:50%}
+  .hero .tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    background:rgba(255,255,255,.18);padding:6px 12px;border-radius:999px;margin-bottom:14px}
+  .hero h1{margin:0 0 8px;font-size:30px;line-height:1.2}
+  .hero p{margin:0;opacity:.92;font-size:15.5px;max-width:680px}
+  .hero .meta{margin-top:18px;display:flex;flex-wrap:wrap;gap:10px}
+  .hero .meta span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+    padding:5px 11px;border-radius:8px;font-size:12.5px;font-weight:600}
+  .verdict{margin-top:18px;display:inline-flex;align-items:center;gap:9px;background:#0f9d58;
+    padding:9px 16px;border-radius:10px;font-weight:800;font-size:15px;box-shadow:0 6px 16px rgba(15,157,88,.35)}
+
+  section{margin-top:30px}
+  h2{font-size:20px;margin:0 0 14px;display:flex;align-items:center;gap:10px}
+  h2 .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:8px;
+    background:var(--indigo-soft);color:var(--indigo);font-size:14px;font-weight:800}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;box-shadow:var(--shadow)}
+  .lead{color:var(--muted);font-size:15px;margin:0 0 16px}
+
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:720px){.g2,.g3,.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:480px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+  .stat .v{font-size:26px;font-weight:800;letter-spacing:-.01em}
+  .stat .l{font-size:12.5px;color:var(--muted);margin-top:3px;font-weight:600}
+  .stat.green .v{color:var(--green)} .stat.indigo .v{color:var(--indigo)} .stat.red .v{color:var(--red)}
+
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:#fafbff;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  tr:last-child td{border-bottom:none}
+  code{background:#f0f2fa;padding:1.5px 6px;border-radius:5px;font-size:12.8px;
+    font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace}
+
+  .pill{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px}
+  .pill.green{background:var(--green-soft);color:var(--green)}
+  .pill.red{background:var(--red-soft);color:var(--red)}
+  .pill.amber{background:var(--amber-soft);color:var(--amber)}
+  .pill.indigo{background:var(--indigo-soft);color:var(--indigo)}
+
+  .flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin-top:6px}
+  .node{flex:1 1 130px;background:#fafbff;border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .node b{display:block;font-size:13.5px} .node small{color:var(--muted);font-size:12px}
+  .arrow{align-self:center;color:var(--indigo);font-weight:800;font-size:18px}
+
+  .callout{border-left:4px solid var(--indigo);background:var(--indigo-soft);
+    border-radius:0 12px 12px 0;padding:14px 18px;margin-top:14px}
+  .callout.win{border-color:var(--green);background:var(--green-soft)}
+  .callout.warn{border-color:var(--amber);background:var(--amber-soft)}
+  .callout b{display:block;margin-bottom:3px}
+
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:560px){.cmp{grid-template-columns:1fr}}
+  .cmp .box{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .cmp .box .hd{padding:10px 16px;font-weight:800;font-size:14px;color:#fff}
+  .cmp .v1 .hd{background:#d9352c} .cmp .v2 .hd{background:#0f9d58}
+  .cmp .bd{padding:14px 16px;font-size:13.5px}
+  .cmp .bd .q{color:var(--muted);font-style:italic;margin-bottom:8px}
+
+  ul.clean{margin:8px 0 0;padding-left:20px} ul.clean li{margin:5px 0}
+  .foot{margin-top:34px;text-align:center;color:var(--muted);font-size:12.5px}
+  .check{color:var(--green);font-weight:800}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="tag">Lab Day 14 · Expert Level</span>
+    <h1>🏭 AI Evaluation Factory</h1>
+    <p>Hệ thống đánh giá tự động (benchmark) cho AI Agent dạng RAG — đo lường chất lượng bằng con số,
+       phát hiện hallucination, và tự động quyết định Release/Rollback.</p>
+    <div class="meta">
+      <span>📦 Domain: IT Support (Tiếng Việt)</span>
+      <span>🤖 OpenAI · gpt-4o + gpt-4o-mini</span>
+      <span>🧪 55 test cases</span>
+      <span>📅 16/06/2026 · LIVE mode</span>
+    </div>
+    <div class="verdict">🚦 Release Gate: APPROVE (Agent V2)</div>
+  </header>
+
+  <!-- 1. YÊU CẦU -->
+  <section>
+    <h2><span class="n">1</span> Yêu cầu của dự án</h2>
+    <div class="card">
+      <p class="lead">Nhiệm vụ: xây một "nhà máy chấm điểm AI" chuyên nghiệp, chứng minh bằng số liệu
+        Agent tốt/tệ ở đâu. Bài có <b>điểm liệt</b> nếu thiếu Multi-Judge hoặc Retrieval metrics.</p>
+      <table>
+        <tr><th>Hạng mục bắt buộc</th><th>Yêu cầu</th><th>Điểm</th></tr>
+        <tr><td><b>Retrieval Eval</b></td><td>Tính Hit Rate &amp; MRR cho ≥50 cases</td><td>10</td></tr>
+        <tr><td><b>Dataset &amp; SDG</b></td><td>50+ golden cases có Ground Truth IDs + bộ Red-Teaming</td><td>10</td></tr>
+        <tr><td><b>Multi-Judge</b> <span class="pill red">điểm liệt nếu thiếu</span></td>
+            <td>≥2 model Judge khác nhau + độ đồng thuận + xử lý xung đột</td><td>15</td></tr>
+        <tr><td><b>Regression Testing</b></td><td>So sánh V1 vs V2 + Release Gate tự động</td><td>10</td></tr>
+        <tr><td><b>Performance</b></td><td>Async &lt;2 phút/50 cases + báo cáo Cost &amp; Token</td><td>10</td></tr>
+        <tr><td><b>Failure Analysis</b></td><td>Phân cụm lỗi + "5 Whys" tới root cause</td><td>5</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 2. KIẾN TRÚC -->
+  <section>
+    <h2><span class="n">2</span> Kiến trúc giải pháp</h2>
+    <div class="card">
+      <p class="lead">Pipeline RAG được đánh giá đa tầng, chạy bất đồng bộ (async) và có cổng release tự động.</p>
+      <div class="flow">
+        <div class="node"><b>📚 Corpus</b><small>14 tài liệu IT, có chunk ID</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>🔎 Retriever</b><small>Embedding + cosine</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>🤖 Agent V1/V2</b><small>RAG sinh đáp án</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>⚖️ Eval Engine</b><small>Retrieval · Faithfulness · Multi-Judge</small></div>
+        <div class="arrow">→</div>
+        <div class="node"><b>🚦 Release Gate</b><small>APPROVE / BLOCK</small></div>
+      </div>
+      <div class="callout">
+        <b>Điểm thiết kế then chốt</b>
+        <b>V1 vs V2</b> chỉ khác <b>prompt + top_k</b> (cùng model <code>gpt-4o-mini</code>) → cô lập tác động của thiết kế agent.
+        Còn <b>"2 model khác nhau"</b> nằm ở khâu <b>Judge</b> (<code>gpt-4o</code> + <code>gpt-4o-mini</code>) — hai trục độc lập.
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. ĐÃ LÀM GÌ -->
+  <section>
+    <h2><span class="n">3</span> Những việc đã làm để giải quyết</h2>
+    <div class="card">
+      <table>
+        <tr><th>Thành phần</th><th>Giải quyết yêu cầu nào</th><th>Trạng thái</th></tr>
+        <tr><td><code>engine/retriever.py</code> + corpus</td><td>Tìm tài liệu (RAG), tạo retrieved_ids</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>data/synthetic_gen.py</code></td><td>Sinh 55 golden cases + 10 red-team (5 bẫy hallucination)</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>engine/retrieval_eval.py</code></td><td>Hit Rate + MRR (loại case out-of-context)</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>engine/faithfulness.py</code></td><td>Đo "bịa" (faithfulness) + relevancy — custom RAGAS</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>engine/llm_judge.py</code></td><td><b>Multi-Judge 2 model</b> + Cohen's Kappa + xử lý xung đột + position-bias</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>agent/main_agent.py</code></td><td>Agent RAG V1 (baseline ẩu) &amp; V2 (có guardrail)</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>engine/runner.py</code></td><td>Chạy song song async + Semaphore giới hạn rate</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>engine/cost.py</code></td><td>Đếm token → USD, "giá mỗi lần eval"</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>main.py</code></td><td>Regression V1↔V2 + Release Gate (có dung sai chống nhiễu)</td><td><span class="check">✔</span></td></tr>
+        <tr><td><code>analysis/failure_analysis.md</code></td><td>Tự sinh failure clustering + 5-Whys từ số liệu thật</td><td><span class="check">✔</span></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 4. KẾT QUẢ -->
+  <section>
+    <h2><span class="n">4</span> Kết quả benchmark (số liệu thật, LIVE)</h2>
+    <div class="grid g4" style="margin-bottom:14px">
+      <div class="stat indigo"><div class="v">55</div><div class="l">Test cases (10 red-team)</div></div>
+      <div class="stat green"><div class="v">100%</div><div class="l">Hit Rate · MRR 0.98</div></div>
+      <div class="stat green"><div class="v">4.84<span style="font-size:15px">/5</span></div><div class="l">Điểm Multi-Judge (V2)</div></div>
+      <div class="stat green"><div class="v">100%</div><div class="l">Pass rate (V2)</div></div>
+      <div class="stat indigo"><div class="v">92.7%</div><div class="l">Agreement 2 Judge</div></div>
+      <div class="stat indigo"><div class="v">0.43</div><div class="l">Cohen's Kappa</div></div>
+      <div class="stat indigo"><div class="v">100%</div><div class="l">Position-bias consistency</div></div>
+      <div class="stat"><div class="v">$0.0020</div><div class="l">Chi phí / mỗi eval</div></div>
+    </div>
+    <div class="card">
+      <table>
+        <tr><th>Chỉ số</th><th>V1 (baseline)</th><th>V2 (optimized)</th><th>Δ</th></tr>
+        <tr><td>Điểm trung bình (Judge)</td><td>4.718</td><td><b>4.836</b></td><td><span class="pill green">+0.118</span></td></tr>
+        <tr><td>Pass rate</td><td>96.4%</td><td><b>100%</b></td><td><span class="pill green">+3.6%</span></td></tr>
+        <tr><td>Faithfulness (chống bịa)</td><td>0.982</td><td><b>1.000</b></td><td><span class="pill green">+0.018</span></td></tr>
+        <tr><td>Chi phí / eval</td><td>$0.00222</td><td><b>$0.00196</b></td><td><span class="pill green">rẻ hơn 12%</span></td></tr>
+        <tr><td>Thời gian (55 cases)</td><td>120.9s</td><td><b>98.5s</b></td><td><span class="pill green">&lt; 2 phút ✔</span></td></tr>
+      </table>
+      <div class="callout win">
+        <b>🚦 Release Gate → APPROVE</b>
+        Δscore = +0.118 <b>vượt ngưỡng nhiễu ±0.1</b> → cải thiện thật (không phải may rủi).
+        V2 tốt hơn, pass 100%, lại rẻ hơn → chấp nhận release.
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CÂU CHUYỆN KỸ THUẬT -->
+  <section>
+    <h2><span class="n">5</span> Câu chuyện kỹ thuật nổi bật</h2>
+
+    <div class="card">
+      <h3 style="margin:0 0 6px">🎣 Bắt quả tang Agent bịa (Hallucination)</h3>
+      <p class="lead">Thiết kế câu hỏi "bẫy": đúng chủ đề IT nhưng chi tiết KHÔNG có trong tài liệu.
+        Agent ẩu sẽ điền số bịa; agent có guardrail sẽ từ chối. Ví dụ thật (case <code>GS-052</code>):</p>
+      <div class="cmp">
+        <div class="box v1">
+          <div class="hd">V1 — không guardrail · faithfulness 0.0 🟥</div>
+          <div class="bd"><div class="q">"VPN cho tối đa bao nhiêu thiết bị?"</div>
+            “VPN client GlobalConnect cho phép đăng nhập tối đa trên <b>3 thiết bị</b>…”
+            <div style="margin-top:8px"><span class="pill red">BỊA — tài liệu không hề có con số này</span></div>
+          </div>
+        </div>
+        <div class="box v2">
+          <div class="hd">V2 — có guardrail · faithfulness 1.0 🟩</div>
+          <div class="bd"><div class="q">"VPN cho tối đa bao nhiêu thiết bị?"</div>
+            “Tài liệu không cung cấp thông tin về số lượng thiết bị… vui lòng liên hệ IT Helpdesk 1234.”
+            <div style="margin-top:8px"><span class="pill green">BÁM CONTEXT — từ chối đúng</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="callout warn">
+        <b>Bài học (Technical Depth)</b>
+        Model nền <code>gpt-4o-mini</code> vốn đã khá "cứng" → guardrail prompt chỉ tạo khác biệt rõ ở
+        input hiểm. Hệ thống eval <b>lượng hóa</b> được khác biệt đó qua chỉ số <b>Faithfulness</b>.
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <h3 style="margin:0 0 6px">🔁 Vòng lặp Evaluation thực chiến</h3>
+      <ul class="clean">
+        <li><b>Lần đầu:</b> "bản tối ưu" V2 lại <span class="pill red">BLOCK</span> — eval bắt được V2 thụt lùi.</li>
+        <li><b>5-Whys → root cause:</b> prompt V2 (1) đóng cứng câu từ chối sai bộ phận, (2) từ chối nhầm cả câu trả lời được.</li>
+        <li><b>Sửa prompt V2</b> → định tuyến đúng bộ phận (HR vs IT) + cho phép giải thích từ context.</li>
+        <li><b>Phát hiện nhiễu LLM-judge:</b> Δ dao động ±0.1 giữa các lần chạy → thêm <b>dung sai gate</b> + dùng pass_rate phụ trợ.</li>
+        <li><b>Thêm 5 bẫy hallucination</b> để tạo khoảng cách điểm thật → V2 thắng <span class="pill green">+0.118</span> ổn định → <span class="pill green">APPROVE</span>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6. RUBRIC -->
+  <section>
+    <h2><span class="n">6</span> Đối chiếu tiêu chí chấm điểm</h2>
+    <div class="card">
+      <table>
+        <tr><th>Hạng mục</th><th>Bằng chứng trong hệ thống</th><th>Điểm</th></tr>
+        <tr><td>Retrieval Eval</td><td>Hit Rate 100% · MRR 0.98 trên 51 case áp dụng</td><td>10 <span class="check">✔</span></td></tr>
+        <tr><td>Dataset &amp; SDG</td><td>55 cases · 10 red-team (injection, out-of-context, 5 hallucination trap)</td><td>10 <span class="check">✔</span></td></tr>
+        <tr><td>Multi-Judge</td><td>gpt-4o + gpt-4o-mini · Agreement 92.7% · Kappa 0.43 · auto-resolve xung đột · position-bias 100%</td><td>15 <span class="check">✔</span></td></tr>
+        <tr><td>Regression</td><td>V1 vs V2 · Δ+0.118 · Release Gate APPROVE có dung sai chống nhiễu</td><td>10 <span class="check">✔</span></td></tr>
+        <tr><td>Performance</td><td>Async · 98.5s/55 cases (&lt;2 phút) · cost $0.108 · $0.0020/eval</td><td>10 <span class="check">✔</span></td></tr>
+        <tr><td>Failure Analysis</td><td>Failure clustering + 5-Whys tự sinh tới root cause (Prompting/Retrieval)</td><td>5 <span class="check">✔</span></td></tr>
+      </table>
+      <div class="callout win"><b>Tránh điểm liệt:</b> có đủ ≥2 Judge model &amp; Retrieval metrics.</div>
+    </div>
+  </section>
+
+  <!-- 7. CÁCH CHẠY -->
+  <section>
+    <h2><span class="n">7</span> Cách chạy &amp; sản phẩm nộp</h2>
+    <div class="grid g2">
+      <div class="card">
+        <h3 style="margin:0 0 8px;font-size:15px">▶️ Lệnh chạy</h3>
+        <table>
+          <tr><td><code>pip install -r requirements.txt</code></td></tr>
+          <tr><td><code>python data/synthetic_gen.py</code> — sinh dataset</td></tr>
+          <tr><td><code>python main.py</code> — benchmark + reports</td></tr>
+          <tr><td><code>python check_lab.py</code> — kiểm tra trước khi nộp</td></tr>
+          <tr><td><code>python probe_hallucination.py</code> — test V1 bịa vs V2</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 8px;font-size:15px">📤 Deliverables</h3>
+        <ul class="clean">
+          <li><code>reports/summary.json</code> <span class="pill green">✓</span></li>
+          <li><code>reports/benchmark_results.json</code> <span class="pill green">✓</span></li>
+          <li><code>analysis/failure_analysis.md</code> <span class="pill green">✓</span></li>
+          <li><code>analysis/reflections/reflection_*.md</code> <span class="pill amber">cần điền tên</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    Lab 14 — AI Evaluation Factory · Báo cáo tự tổng hợp từ <code>reports/summary.json</code> (LIVE 16/06/2026).<br>
+    Agent V1/V2 dùng kiến trúc RAG · Đánh giá bởi Multi-Judge (gpt-4o + gpt-4o-mini).
+  </div>
+
+</div>
+</body>
+</html>
