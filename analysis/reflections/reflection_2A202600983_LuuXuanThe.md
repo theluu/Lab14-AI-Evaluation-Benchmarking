@@ -1,10 +1,10 @@
 # Báo cáo Cá nhân (Individual Reflection)
 
-> Đổi tên file thành `reflection_<Tên_của_bạn>.md` và điền các phần bên dưới.
 > Bám theo 3 tiêu chí chấm điểm cá nhân: Engineering Contribution, Technical Depth, Problem Solving.
 
-**Họ tên:** _________________  
-**Vai trò trong nhóm:** _________________
+**Họ tên:** Lưu Xuân Thế  
+**Mã sinh viên:** 2A202600983  
+**Vai trò:** Thực hiện cá nhân (toàn bộ hệ thống)
 
 ---
 
